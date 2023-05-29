@@ -22,11 +22,9 @@ import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2Aut
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.Builder;
 import org.springframework.web.server.ResponseStatusException;
-import static org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient;
 
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
@@ -46,7 +44,7 @@ public class VerifiableCredentialsController {
 	private String vcIssuanceUri;
 
 	@Value("${vc.issuance-request}")
-	private String vcIssuanceRequest;
+  private String vcIssuanceRequest;
 
 	@Autowired
 	private CacheManager cache;
@@ -109,12 +107,17 @@ public class VerifiableCredentialsController {
 	}
 
 	@GetMapping({"/api/vc/issuance"})
-	public Mono<String> issue(@RegisteredOAuth2AuthorizedClient("azure")OAuth2AuthorizedClient authorizedClient)
+	public Mono<String> issue(@RegisteredOAuth2AuthorizedClient("azure")OAuth2AuthorizedClient authorizedClient, @AuthenticationPrincipal OidcUser oauth2User)
 	{
 		String token =  authorizedClient.getAccessToken().getTokenValue();
-		String body = String.format(vcIssuanceRequest, "1234",  "1234"); //ToDo: Generate random state + api key
 
-		log.debug("Calling issuance uri {} with Header Bearer {} and Body {}", vcIssuanceUri , token, body);
+    // TODO: Generate random state + api key
+    String body = String.format(vcIssuanceRequest,
+                                "1234",  "1234", //state and API key
+                                oauth2User.getPreferredUsername(), oauth2User.getFullName(), oauth2User.getGivenName(), oauth2User.getFamilyName()
+                                );
+
+		log.info("Calling issuance uri {} with Header Bearer {} and Body {}", vcIssuanceUri , token, body);
 
 		Builder builder = WebClient.builder()
 				.baseUrl(vcIssuanceUri)

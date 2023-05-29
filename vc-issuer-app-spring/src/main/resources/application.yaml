@@ -11,7 +11,28 @@ vc:
   credential-type: 'VerifiedCredentialEmployee'
   issuance-uri: https://verifiedid.did.msidentity.com/v1.0/verifiableCredentials/createIssuanceRequest
   issuance-callback-url: ${vc_issuance_callback_url:https://xxx.sa.ngrok.io/api/vc/issuance/callback}
-  issuance-request: '{ "includeQRCode": false, "callback": { "url": "${vc.issuance-callback-url}", "state": "%s", "headers": { "api-key": "%s" } }, "authority": "${vc.authority}", "registration": { "clientName": "${vc.client-name}" }, "type": "${vc.credential-type}", "manifest": "${vc.credential-manifest}" }'
+  issuance-request: '{
+    "includeQRCode": false,
+    "callback": {
+        "url": "${vc.issuance-callback-url}",
+        "state": "%s",
+        "headers": {
+            "api-key": "%s"
+        }
+    },
+    "authority": "${vc.authority}",
+    "registration": {
+        "clientName": "${vc.client-name}"
+    },
+    "type": "${vc.credential-type}",
+    "manifest": "${vc.credential-manifest}",
+    "claims": {
+        "preferred_username": "%s",
+        "name": "%s",
+        "given_name": "%s",
+        "family_name": "%s"
+    }
+}'
 
 spring:
   thymeleaf:
